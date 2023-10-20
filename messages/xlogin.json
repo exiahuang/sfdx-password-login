@@ -1,0 +1,15 @@
+{
+    "auth": {
+        "username": {
+            "login": {
+                "description": "authorize an org using the username password flow",
+                "flags": {
+                    "instanceurl": "the login URL of the instance the org lives on",
+                    "username": "username for org",
+                    "alias": "alias for org",
+                    "password": "password for org - it is recommended to not set this flag and use the prompt"
+                }
+            }
+        }
+    }
+}

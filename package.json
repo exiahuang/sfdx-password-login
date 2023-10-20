@@ -1,0 +1,72 @@
+{
+    "name": "sfdx-password-login",
+    "description": "sfdx password login command",
+    "version": "0.0.1",
+    "author": "exiahuang",
+    "bugs": "https://github.com/exiahuang/sfdx-password-login/issues",
+    "dependencies": {
+        "@oclif/command": "^1",
+        "@oclif/config": "^1",
+        "@oclif/errors": "^1",
+        "@salesforce/command": "^2",
+        "@salesforce/core": "^2",
+        "glob": "^7.1.6",
+        "jsforce": "^1.9.3",
+        "tslib": "^1"
+    },
+    "devDependencies": {
+        "@oclif/dev-cli": "^1",
+        "@oclif/plugin-help": "^2",
+        "@oclif/test": "^1",
+        "@salesforce/dev-config": "1.4.1",
+        "@types/chai": "^4",
+        "@types/mocha": "^5",
+        "@types/node": "^10",
+        "chai": "^4",
+        "globby": "^8",
+        "mocha": "^5",
+        "nyc": "^14",
+        "ts-node": "^8",
+        "tslint": "^5"
+    },
+    "engines": {
+        "node": ">=8.0.0"
+    },
+    "files": [
+        "/lib",
+        "/messages",
+        "/npm-shrinkwrap.json",
+        "/oclif.manifest.json"
+    ],
+    "homepage": "https://github.com/exiahuang/sfdx-password-login",
+    "keywords": [
+        "sfdx-plugin",
+        "sfdx password login"
+    ],
+    "license": "GPL-3.0",
+    "oclif": {
+        "commands": "./lib/commands",
+        "bin": "sfdx",
+        "topics": {
+            "xlogin": {
+                "description": "authorize an org using the username password flow.",
+                "subtopics": {
+                    "login": {
+                        "description": "commands for authorizing an org for use with the Salesforce CLI"
+                    }
+                }
+            }
+        },
+        "devPlugins": [
+            "@oclif/plugin-help"
+        ]
+    },
+    "repository": "https://github.com/exiahuang/sfdx-password-login",
+    "scripts": {
+        "postpack": "rm -f oclif.manifest.json",
+        "posttest": "tslint -p test -t stylish",
+        "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+        "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+        "version": "oclif-dev readme && git add README.md"
+    }
+}
