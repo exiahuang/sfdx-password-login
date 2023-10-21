@@ -1,9 +1,21 @@
 {
-  "extends": "./node_modules/@salesforce/dev-config/tsconfig",
   "compilerOptions": {
     "outDir": "./lib",
     "rootDir": "./src",
-    "typeRoots": [ "node_modules/@types" ]
+    "module": "commonjs",
+    "target": "es2021",
+    "lib": [
+      "es2021"
+    ],
+    "sourceMap": false,
+    "declaration": false,
+    "moduleResolution": "node",
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "typeRoots": [
+      "node_modules/@types"
+    ]
   },
   "include": [
     "./src/**/*"
