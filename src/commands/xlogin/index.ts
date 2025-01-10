@@ -9,6 +9,7 @@ interface LoginInfo {
   sf_password: string;
   client_id?: string;
   client_secret?: string;
+  apiversion: string;
 }
 
 // Initialize Messages with the current plugin directory
@@ -19,7 +20,7 @@ Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('sfdx-password-login', 'xlogin');
 
 async function soapLogin(loginInfo) {
-  const { sf_url, sf_username, sf_password } = loginInfo;
+  const { sf_url, sf_username, sf_password, apiversion } = loginInfo;
   const soapBody = `<?xml version="1.0" encoding="utf-8" ?>
         <env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -32,7 +33,7 @@ async function soapLogin(loginInfo) {
           </env:Body>
         </env:Envelope>`;
 
-  const soapResponse = await fetch(sf_url + '/services/Soap/u/55.0', {
+  const soapResponse = await fetch(sf_url + '/services/Soap/u/' + apiversion, {
     method: 'POST',
     headers: {
       'Content-Type': 'text/xml',
@@ -46,10 +47,15 @@ async function soapLogin(loginInfo) {
   const xmlDoc = await parser.parseStringPromise(soapResult);
   const result = xmlDoc['soapenv:Envelope']['soapenv:Body'][0]['loginResponse'][0]['result'][0];
 
+  const getInstances = (url: string) => {
+    const serverUrl = new URL(url);
+    return `${serverUrl.protocol}//${serverUrl.hostname}`;
+  };
+
   return {
     accessToken: result.sessionId[0],
     clientId: 'PlatformCLI',
-    instanceUrl: result.serverUrl[0],
+    instanceUrl: getInstances(result.serverUrl[0]),
     loginUrl: sf_url,
     orgId: result.userInfo[0].organizationId[0],
   };
@@ -85,7 +91,7 @@ async function restLogin(loginInfo: LoginInfo) {
 }
 
 async function authorization(loginInfo: LoginInfo) {
-  const { sf_url, client_id, client_secret, sf_username, sf_password } = loginInfo;
+  const { sf_url, client_id, client_secret, sf_username, sf_password, apiversion } = loginInfo;
   if (client_id && client_secret) {
     return await restLogin(loginInfo);
   } else {
@@ -93,6 +99,7 @@ async function authorization(loginInfo: LoginInfo) {
       sf_url,
       sf_username,
       sf_password,
+      apiversion,
     });
   }
 }
@@ -146,6 +153,7 @@ export default class SfdxXLogin extends SfdxCommand {
         client_secret: this.flags.clientsecret,
         sf_username: username,
         sf_password: password,
+        apiversion: this.flags.apiversion,
       });
 
       const auth = await AuthInfo.create({ username, accessTokenOptions });
