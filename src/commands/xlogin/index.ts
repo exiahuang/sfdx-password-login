@@ -140,7 +140,6 @@ export default class SfdxXLogin extends SfdxCommand {
     }
 
     try {
-      console.log(instanceUrl);
       const accessTokenOptions = await authorization({
         sf_url: instanceUrl,
         client_id: this.flags.clientid,
