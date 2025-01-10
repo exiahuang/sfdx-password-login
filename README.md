@@ -8,7 +8,7 @@ Install as sfdx plugin
 
 ```sh
 # install
-sfdx plugins:install sfdx-password-login
+echo y | sfdx plugins:install sfdx-password-login
 
 # show plugin
 sfdx plugins
@@ -22,7 +22,7 @@ sfdx xlogin --help
 ## use Username-Password OAuth Authentication
 
 ```sh
-sfdx xlogin -u username -p password -a alias -r instanceurl
+sfdx xlogin -u username -p password -a alias -r instanceurl -i clientid -s clientsecret
 
 sfdx xlogin -u username -p password -a alias -r https://login.salesforce.com/
 sfdx xlogin -u username -p password -a alias -r https://test.salesforce.com/
