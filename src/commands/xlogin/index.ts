@@ -78,7 +78,7 @@ async function restLogin(loginInfo: LoginInfo) {
     body: new URLSearchParams(body),
   });
 
-  const data: any = await response.text();
+  const data = JSON.parse(await response.text());
   const [orgId] = data?.id.split('/').slice(-2);
 
   return {
