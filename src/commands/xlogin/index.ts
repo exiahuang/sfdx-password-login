@@ -134,6 +134,10 @@ export default class SfdxXLogin extends SfdxCommand {
       char: 's',
       description: messages.getMessage('auth.username.login.flags.clientsecret'),
     }),
+    ver: flags.string({
+      description: messages.getMessage('auth.username.login.flags.apiversion'),
+      default: '63.0'
+    }),
   };
 
   public async run(): Promise<AnyJson> {
@@ -153,7 +157,7 @@ export default class SfdxXLogin extends SfdxCommand {
         client_secret: this.flags.clientsecret,
         sf_username: username,
         sf_password: password,
-        apiversion: this.flags.apiversion,
+        apiversion: this.flags.ver,
       });
 
       const auth = await AuthInfo.create({ username, accessTokenOptions });

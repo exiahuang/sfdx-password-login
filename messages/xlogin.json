@@ -9,7 +9,8 @@
                     "username": "username for org",
                     "password": "password for org - it is recommended to not set this flag and use the prompt",
                     "clientid": "sf client id",
-                    "clientsecret": "sf client secret"
+                    "clientsecret": "sf client secret",
+                    "apiversion": "api version"
                 }
             }
         }
