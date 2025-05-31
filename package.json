@@ -1,7 +1,7 @@
 {
     "name": "sfdx-password-login",
     "description": "sfdx password login command",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "author": "exiahuang",
     "bugs": "https://github.com/exiahuang/sfdx-password-login/issues",
     "dependencies": {

@@ -10,6 +10,8 @@ interface LoginInfo {
   client_id?: string;
   client_secret?: string;
   apiversion: string;
+  // User-Agent header value
+  ua?: string;
 }
 
 // Initialize Messages with the current plugin directory
@@ -20,7 +22,7 @@ Messages.importMessagesDirectory(__dirname);
 const messages = Messages.loadMessages('sfdx-password-login', 'xlogin');
 
 async function soapLogin(loginInfo) {
-  const { sf_url, sf_username, sf_password, apiversion } = loginInfo;
+  const { sf_url, sf_username, sf_password, apiversion, ua } = loginInfo;
   const soapBody = `<?xml version="1.0" encoding="utf-8" ?>
         <env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -38,6 +40,7 @@ async function soapLogin(loginInfo) {
     headers: {
       'Content-Type': 'text/xml',
       SOAPAction: 'login',
+      'User-Agent': ua,
     },
     body: soapBody,
   });
@@ -45,7 +48,14 @@ async function soapLogin(loginInfo) {
 
   const parser = new xml2js.Parser();
   const xmlDoc = await parser.parseStringPromise(soapResult);
-  const result = xmlDoc['soapenv:Envelope']['soapenv:Body'][0]['loginResponse'][0]['result'][0];
+  const result = xmlDoc?.['soapenv:Envelope']?.['soapenv:Body']?.[0]?.['loginResponse']?.[0]?.['result']?.[0];
+
+  if (!result) {
+    const fault =
+      xmlDoc?.['soapenv:Envelope']?.['soapenv:Body']?.[0]?.['soapenv:Fault']?.[0]?.['faultstring']?.join('\n');
+    console.error(fault);
+    process.exit(1);
+  }
 
   const getInstances = (url: string) => {
     const serverUrl = new URL(url);
@@ -62,7 +72,7 @@ async function soapLogin(loginInfo) {
 }
 
 async function restLogin(loginInfo: LoginInfo) {
-  const { sf_url, client_id, client_secret, sf_username, sf_password } = loginInfo;
+  const { sf_url, client_id, client_secret, sf_username, sf_password, ua } = loginInfo;
   const body = {
     grant_type: 'password',
     client_id: client_id,
@@ -74,6 +84,7 @@ async function restLogin(loginInfo: LoginInfo) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': ua,
     },
     body: new URLSearchParams(body),
   });
@@ -91,7 +102,7 @@ async function restLogin(loginInfo: LoginInfo) {
 }
 
 async function authorization(loginInfo: LoginInfo) {
-  const { sf_url, client_id, client_secret, sf_username, sf_password, apiversion } = loginInfo;
+  const { sf_url, client_id, client_secret, sf_username, sf_password, apiversion, ua } = loginInfo;
   if (client_id && client_secret) {
     return await restLogin(loginInfo);
   } else {
@@ -100,6 +111,7 @@ async function authorization(loginInfo: LoginInfo) {
       sf_username,
       sf_password,
       apiversion,
+      ua,
     });
   }
 }
@@ -136,7 +148,10 @@ export default class SfdxXLogin extends SfdxCommand {
     }),
     ver: flags.string({
       description: messages.getMessage('auth.username.login.flags.apiversion'),
-      default: '63.0'
+      default: '63.0',
+    }),
+    ua: flags.string({
+      description: 'User-Agent header value',
     }),
   };
 
@@ -145,6 +160,15 @@ export default class SfdxXLogin extends SfdxCommand {
     const alias = this.flags.alias;
     let password = this.flags.password;
     const instanceUrl = this.flags.instanceurl || 'https://login.salesforce.com';
+    let ua = !this.flags.ua
+      ? undefined
+      : this.flags.ua.toLowerCase() === 'dataloader'
+        ? 'Salesforce Web Service Connector For Java/1.0'
+        : this.flags.ua.toLowerCase() === 'windows' || this.flags.ua.toLowerCase() === 'win'
+          ? 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36'
+          : this.flags.ua.toLowerCase() === 'mac'
+            ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36'
+            : this.flags.ua;
 
     if (!password) {
       password = await this.ux.prompt(`password for ${username}`, { type: 'mask' });
@@ -158,6 +182,7 @@ export default class SfdxXLogin extends SfdxCommand {
         sf_username: username,
         sf_password: password,
         apiversion: this.flags.ver,
+        ua: ua,
       });
 
       const auth = await AuthInfo.create({ username, accessTokenOptions });
